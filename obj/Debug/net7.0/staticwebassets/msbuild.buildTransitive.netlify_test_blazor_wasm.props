@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\netlify_test_blazor_wasm.props" />
+</Project>

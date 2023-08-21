@@ -1,0 +1,89 @@
+@using netlify_test_blazor_wasm.Models;
+@page "/trello"
+
+<PageTitle>Trello Board</PageTitle>
+
+<section>
+    <button @onclick="ToggleIsCreating">Click here to create a new board</button>
+    @if(IsCreating == true)
+    {
+        <div style="margin-top:30px;display:flex;flex-direction:column;">
+            <InputText placeholder="board name" style="all:unset;background-color:white;border-top:1px solid black;border-left:1px solid black;border-right:1px solid black;" @bind-Value="board.BoardName" />
+            <InputText placeholder="name of card container " style="all:unset;background-color:white;border-left:1px solid black;border-right:1px solid black;" @bind-Value="boardItemContainer.BoardItemContainerName" />
+            <InputText placeholder="card name" style="all:unset;background-color:white;border-left:1px solid black;border-right:1px solid black;" @bind-Value="boardCardItem.CardName" />
+            <InputTextArea placeholder="card description" style="all:unset;resize:vertical;background-color:white;border-bottom:1px solid black;border-left:1px solid black;border-right:1px solid black;" @bind-Value="boardCardItem.CardDescription" />
+            @if(board.BoardName != string.Empty & boardItemContainer.BoardItemContainerName != string.Empty & boardCardItem.CardName != string.Empty & boardCardItem.CardDescription != string.Empty)
+            {
+                <input type="button" @onclick="() => {CreateNewBoard();CreateNewBoardItemContainer();CreateNewBoardCardItem();}" value="Create a new board" />
+            }
+            else
+            {
+                <input style="background-color:grey" type="button" value="Please enter all values" />
+            }
+        </div>
+    }
+    @foreach(var board in BoardList)
+    {
+        <div style="height:" id="Board">
+           <h1>@board.BoardName</h1>
+            @foreach(var boardItem in boardItemContainers)
+            {
+                <div style="display:flex;flex-direction:column;">
+                    <p>@boardItemContainer.BoardItemContainerName</p>
+                    <input style="height:fit-content;width:fit-content;" type="button" value="@hoverHelpInfo" @onmouseenter="() => {setHelpInfoONMouseEnter();}" @onmouseleave="() => {setHelpInfoONMouseLeave();}" />
+                    @foreach(var card in boardCardItems)
+                    {
+                        <div id="card">
+                            <p>@card.CardName</p>
+                            <p style="height:fit-content;">@card.CardDescription</p>
+                        </div>
+                    }
+                </div>   
+            }
+        </div>
+    }
+</section>
+
+@code{
+    // variables //
+    public bool IsCreating = false;
+    // Objects //
+    public Board board = new Board();
+    public BoardItemContainer boardItemContainer = new BoardItemContainer();
+    public BoardCardItem boardCardItem = new BoardCardItem();
+    public string hoverHelpInfo = "+";
+
+    // Lists //
+    public List<Board> BoardList = new List<Board>();
+    public List<BoardItemContainer> boardItemContainers = new List<BoardItemContainer>();
+    public List<BoardCardItem> boardCardItems = new List<BoardCardItem>();
+    // Functions or Methods start here //
+    public void setHelpInfoONMouseLeave()
+    {
+        hoverHelpInfo = "+";
+    }
+    public void setHelpInfoONMouseEnter()
+    {
+        hoverHelpInfo = "click to add a new card";
+    }
+    public void ToggleIsCreating()
+    {
+        IsCreating = !IsCreating;
+    }
+    public void CreateNewBoard()
+    {
+        BoardList.Add(board);
+        board = new();
+    }
+    public void CreateNewBoardItemContainer()
+    {
+        boardItemContainers.Add(boardItemContainer);
+        boardItemContainer = new BoardItemContainer();
+    }
+    public void CreateNewBoardCardItem()
+    {
+        boardCardItems.Add(boardCardItem);
+        boardCardItem = new BoardCardItem();
+    }
+    // Functions or Methods end here //
+}
