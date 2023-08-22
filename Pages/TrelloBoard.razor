@@ -2,88 +2,111 @@
 @page "/trello"
 
 <PageTitle>Trello Board</PageTitle>
-
-<section>
-    <button @onclick="ToggleIsCreating">Click here to create a new board</button>
-    @if(IsCreating == true)
+<section style="display:flex;flex-direction:column;">
+    @switch(IsCreatingBoard)
     {
-        <div style="margin-top:30px;display:flex;flex-direction:column;">
-            <InputText placeholder="board name" style="all:unset;background-color:white;border-top:1px solid black;border-left:1px solid black;border-right:1px solid black;" @bind-Value="board.BoardName" />
-            <InputText placeholder="name of card container " style="all:unset;background-color:white;border-left:1px solid black;border-right:1px solid black;" @bind-Value="boardItemContainer.BoardItemContainerName" />
-            <InputText placeholder="card name" style="all:unset;background-color:white;border-left:1px solid black;border-right:1px solid black;" @bind-Value="boardCardItem.CardName" />
-            <InputTextArea placeholder="card description" style="all:unset;resize:vertical;background-color:white;border-bottom:1px solid black;border-left:1px solid black;border-right:1px solid black;" @bind-Value="boardCardItem.CardDescription" />
-            @if(board.BoardName != string.Empty & boardItemContainer.BoardItemContainerName != string.Empty & boardCardItem.CardName != string.Empty & boardCardItem.CardDescription != string.Empty)
+        case false:
+        <button style="width:fit-content;" @onclick="ToggleIsCreatingBoard">Create a new board</button>
+        break;
+        case true:
+        <div style="height: fit-content;width:fit-content">
+            <button style="width:fit-content;" @onclick="ToggleIsCreatingBoard">Cancel</button>
+            <button style="width:fit-content;" @onclick="CreateNewBoard">Create</button>
+            <InputText placeholder="enter a name for the board you wish to create" @bind-Value="boardName" style="all:unset;height: fit-content;width:fit-content;background-color:white;border:1px solid black"/>
+        </div>
+        break;
+    }
+</section>
+@foreach(var boardItem in boards)
+{
+    <section>
+        <h2>@boardItem.BoardName</h2>
+        
+            @if(boardItem.IsCreatingCategory == true)
             {
-                <input type="button" @onclick="() => {CreateNewBoard();CreateNewBoardItemContainer();CreateNewBoardCardItem();}" value="Create a new board" />
+                <div style="height: fit-content;width:fit-content">
+                    <button style="width:fit-content;" @onclick="() => {boardItem.IsCreatingCategory = !boardItem.IsCreatingCategory;}">Cancel</button>
+                    <button style="width:fit-content;" @onclick="() => {CreateNewCategory(boardItem);boardItem.IsCreatingCategory = !boardItem.IsCreatingCategory;}" >Create</button>
+                    <InputText placeholder="enter a name for the category you wish to create" @bind-Value="categoryName" style="all:unset;height: fit-content;width:max-content;background-color:white;border:1px solid black"/>
+                </div>
             }
             else
             {
-                <input style="background-color:grey" type="button" value="Please enter all values" />
+                <button style="width:fit-content;" @onclick="() => {boardItem.IsCreatingCategory = !boardItem.IsCreatingCategory;}">Add a Category</button>
+                @foreach(var category in boardItem.CardContainers)
+                {
+                    <div>
+                        <h3>@category.BoardCardContainerName</h3>
+                        @if(category.IsCreatingCard == true)
+                        {
+
+                            <div style="height: fit-content;width:fit-content">
+                                <button style="width:fit-content;" @onclick="() => {category.IsCreatingCard = !category.IsCreatingCard;}">Cancel</button>
+                                <button style="width:fit-content;" @onclick="() => {CreateNewCard(category);category.IsCreatingCard = !category.IsCreatingCard;}" >Create</button>
+                                <InputText placeholder="enter a name for the Card you wish to create" @bind-Value="cardName" style="all:unset;height: fit-content;width:fit-content;background-color:white;border:1px solid black"/>
+                                <InputTextArea placeholder="enter text for the cards decription" @bind-Value="cardDescription" />
+                            </div>
+                        }
+                        else
+                        {
+                            <button style="width:fit-content;" @onclick="() => {category.IsCreatingCard = !category.IsCreatingCard;}">Add a Card</button>
+                            @foreach(var card in category.Cards)
+                            {
+                                <article>
+                                    <p>@card.CardName</p>
+                                    <p>@card.CardDescription</p>
+                                </article>
+                            }
+                        }
+                        
+                    </div>
+                }
+            
             }
-        </div>
-    }
-    @foreach(var board in BoardList)
-    {
-        <div style="height:" id="Board">
-           <h1>@board.BoardName</h1>
-            @foreach(var boardItem in boardItemContainers)
-            {
-                <div style="display:flex;flex-direction:column;">
-                    <p>@boardItemContainer.BoardItemContainerName</p>
-                    <input style="height:fit-content;width:fit-content;" type="button" value="@hoverHelpInfo" @onmouseenter="() => {setHelpInfoONMouseEnter();}" @onmouseleave="() => {setHelpInfoONMouseLeave();}" />
-                    @foreach(var card in boardCardItems)
-                    {
-                        <div id="card">
-                            <p>@card.CardName</p>
-                            <p style="height:fit-content;">@card.CardDescription</p>
-                        </div>
-                    }
-                </div>   
-            }
-        </div>
-    }
-</section>
+    </section>    
+}
 
 @code{
     // variables //
-    public bool IsCreating = false;
-    // Objects //
-    public Board board = new Board();
-    public BoardItemContainer boardItemContainer = new BoardItemContainer();
-    public BoardCardItem boardCardItem = new BoardCardItem();
-    public string hoverHelpInfo = "+";
+    public bool IsCreatingBoard = false;
+    public bool IsCreatingCategory = false;
+    public bool IsCreatingCard = false;
+    public string boardName = "";
+    public string categoryName = "";
+    public string cardName = "";
+    public string cardDescription = "";
+
 
     // Lists //
-    public List<Board> BoardList = new List<Board>();
-    public List<BoardItemContainer> boardItemContainers = new List<BoardItemContainer>();
-    public List<BoardCardItem> boardCardItems = new List<BoardCardItem>();
+    public List<Board> boards = new List<Board>();
     // Functions or Methods start here //
-    public void setHelpInfoONMouseLeave()
+    public void ToggleIsCreatingBoard()
     {
-        hoverHelpInfo = "+";
+        IsCreatingBoard = !IsCreatingBoard;
     }
-    public void setHelpInfoONMouseEnter()
-    {
-        hoverHelpInfo = "click to add a new card";
-    }
-    public void ToggleIsCreating()
-    {
-        IsCreating = !IsCreating;
-    }
+  
+    
     public void CreateNewBoard()
     {
-        BoardList.Add(board);
-        board = new();
+        var board = new Board(){BoardName = boardName};
+        boards.Add(board);
+        boardName = "";
+        IsCreatingBoard = false;
     }
-    public void CreateNewBoardItemContainer()
+    public void CreateNewCategory(Board currentBoard)
     {
-        boardItemContainers.Add(boardItemContainer);
-        boardItemContainer = new BoardItemContainer();
+        var category = new BoardCardContainer(){BoardCardContainerName = categoryName};
+        currentBoard.CardContainers.Add(category);
+        categoryName = "";
+        IsCreatingCategory = false;
     }
-    public void CreateNewBoardCardItem()
+    public void CreateNewCard(BoardCardContainer currentCategory)
     {
-        boardCardItems.Add(boardCardItem);
-        boardCardItem = new BoardCardItem();
+        var card = new BoardCard(){CardName = cardName,CardDescription = cardDescription};
+        currentCategory.Cards.Add(card);
+        cardName = "";
+        cardDescription = "";
+        IsCreatingCard = false;
     }
     // Functions or Methods end here //
 }

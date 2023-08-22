@@ -7,11 +7,29 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+            <button @onclick="() => {DarkTheme(isDarkMode);}">@modeToggleEmoji</button>
         </div>
 
-        <article class="content px-4">
+        <article style="background-color=@color" class="content px-4">
             @Body
         </article>
     </main>
 </div>
+@code{
+    public bool isDarkMode = false;
+    public string color = "black";
+    public string modeToggleEmoji = "☀️";
+    public void DarkTheme(bool param)
+    {
+        isDarkMode = !param;
+        switch(isDarkMode)
+        {
+            case true:
+            modeToggleEmoji = "🌙";
+            break;
+            case false:
+            modeToggleEmoji = "☀️";
+            break;
+        }
+    }
+}
